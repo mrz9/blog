@@ -15,16 +15,16 @@ class Model {
      * @param {Number} page 
      * @param {Object} where 
      */
-    async page_data(page = 1,where={},orderBy = ""){
+    async $page_data(page = 1,where={},orderBy = ""){
         let offset = this.limit * (page - 1);
         let where_str = '',where_val = [];
 
         if(toString.call(where) === '[object Object]'){
-            where_str = Object.keys(where).map(key=>key += ' = ?'),
-            values = Object.values(where);
+            where_str = Object.keys(where).map(key=>key += ' = ?').join(' AND '),
+            where_val = Object.values(where);
         }
         
-        let sql = `SELECT * from \`${this.prefix + this.table_name}\` limit ${offset},${this.limit} ${where_str ? 'WHERE ' + order_str : ''} ${orderBy ? 'ORDER BY ' + orderBy : ''}`;
+        let sql = `SELECT * from \`${this.prefix + this.table_name}\` ${where_str ? 'WHERE ' + where_str : ''} ${orderBy ? 'ORDER BY ' + orderBy : ''} limit ${offset},${this.limit}`;
         let rs = await this.db.query(sql,where_val);
         return rs;
     }
@@ -32,7 +32,7 @@ class Model {
      * 
      * @param {Object} Bean 
      */
-    async add(Bean){
+    async $add(Bean){
         if(toString.call(Bean) !== '[object Object]'){
             throw new Error('error param')
         }
@@ -43,7 +43,7 @@ class Model {
             return false;
         }
 
-        let sql = `INSERT INTO \`${this.prefix + this.table_name}\` (${keys.join(',')})`;
+        let sql = `INSERT INTO \`${this.prefix + this.table_name}\` (${keys.join(',')}) VALUES (${keys.map(key=>'?').join(',')})`;
         let rs = await this.db.query(sql,values);
         return rs;
     }
@@ -52,7 +52,7 @@ class Model {
      * @param {Object} Bean 
      * @param {Object} where 
      */
-    update(Bean,where){
+    async $update(Bean,where){
         if(toString.call(Bean) !== '[object Object]' || toString.call(where) !== '[object Object]'){
             throw new Error('error param')
         }
@@ -71,9 +71,24 @@ class Model {
         let set = keys.map(key=>key += ' = ?')
         let wset = wkeys.map(key=>key += ' = ?');
 
-        let sql = `UPDATE \`${this.prefix + this.table_name}\` SET ${set.join(',')} where ${wset.join(',')}`;
+        let sql = `UPDATE \`${this.prefix + this.table_name}\` SET ${set.join(',')} where ${wset.join(' AND ')}`;
 
         let rs = await this.db.query(sql,values.concat(wvalues));
+        return rs;
+    }
+    /**
+     * 
+     * @param {Object} where 
+     */
+    async $delete(where){
+        let where_str = '',where_val = [];
+        if(toString.call(where) === '[object Object]'){
+            where_str = Object.keys(where).map(key=>key += ' = ?').join(' AND '),
+            where_val = Object.values(where);
+        }
+        if(!where_str) return false;
+        let sql = `DELETE FROM \`${this.prefix + this.table_name}\` WHERE ${where_str}`
+        let rs = await this.db.query(sql,where_val);
         return rs;
     }
 
