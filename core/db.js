@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-const core = require('./core.js');
+const core = require('./index');
 
 let pool = mysql.createPool({
     connectionLimit : 20,
@@ -18,6 +18,9 @@ const _query = function(sql,fields){
     })
 }
 
+
+
 module.exports = {
+    pool,
     query:_query
 }

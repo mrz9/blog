@@ -1,5 +1,5 @@
-const Controller = require('../core/controller');
-class Control extends Controller {
+const Core = require('../core');
+class Control extends Core.Control {
     constructor(){
         super();
     }

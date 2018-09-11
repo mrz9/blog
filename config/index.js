@@ -4,6 +4,7 @@ module.exports = {
         host:'localhost',
         user:'root',
         password:'root',
+        prefix:'',
         database:'mrz_shop'
     }
 }
