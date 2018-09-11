@@ -1,5 +1,4 @@
 const Core = require('../core');
-const Model = require('../model/user');
 class Control extends Core.Control {
     constructor(){
         super();
@@ -14,7 +13,7 @@ class Control extends Core.Control {
      * 控制器的处理方法
      */
     index(req,res,next){
-        res.send('hell123123o');
+        res.send('home index');
     }
 }
 module.exports = new Control().router;
