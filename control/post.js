@@ -8,7 +8,7 @@ class Control extends Core.Control {
     _route(){
         this.router.get('/',this.index.bind(this)) 
         this.router.post('/create',this.create.bind(this)) 
-        this.router.get('/edit/:id',this.edit.bind(this)) 
+        this.router.post('/edit/:id',this.edit.bind(this)) 
         this.router.get('/delete/:id',this.delete.bind(this)) 
         this.router.get('/page/:page',this.page.bind(this)) 
     }
@@ -45,8 +45,19 @@ class Control extends Core.Control {
             res.send(rs);
         }
     }
-    edit(req,res,next){
-        res.send('post edit')
+    async edit(req,res,next){
+        let post = req.body;
+        if(!req.params.id || post.id !== req.params.id){
+            res.send({code:-1,msg:'参数有误'})
+            return;
+        }
+
+        let rs = await this.model.update(post,{id:req.params.id})
+        if(rs.affectedRows){
+            res.send({code:0,msg:'更新成功'})
+        }else{
+            res.send(rs);
+        }
     }
     delete(req,res,next){
         res.send(`pst delete ${req.params.id}`)
