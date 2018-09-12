@@ -5,6 +5,6 @@ module.exports = {
         user:'root',
         password:'root',
         prefix:'',
-        database:'mrz_shop'
+        database:'blog'
     }
 }
