@@ -27,9 +27,10 @@ class Control extends Core.Control {
         }else{
             let user = await this.model.$get_one(username,'username');
             if(!user.lenght === 0){
-                
+                res.send({code:-1,msg:'用户名或密码错误'});
+            }else{
+                res.send(user);
             }
-            res.send(user);
         }
 
     }
