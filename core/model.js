@@ -91,6 +91,17 @@ class Model {
         let rs = await this.db.query(sql,where_val);
         return rs;
     }
+    /**
+     * 
+     * @param {String} value 
+     * @param {String} key 查询的键值，如果不传默认读取primary_key
+     */
+    async $get_one(value,key=""){
+        let primary_key = key || this.primary_key;
+        let sql = `SELECT *  FROM \`${this.prefix + this.table_name}\` WHERE ? = ?`;
+        let rs = await this.db.query(sql,[primary_key,value]);
+        return rs;
+    }
 
 }
 
