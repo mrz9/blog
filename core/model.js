@@ -1,8 +1,10 @@
 const Core = require('./index');
 const DB = require('./db');
+const Utils = require('./utils')
 class Model {
     constructor(){
         this.db = DB;
+        this.$utils = Utils;
         //默认表名字是model的class的名字的小写
         this.prefix = Core.config.db.prefix || '';
         this.table_name = this.constructor.name.toLocaleLowerCase();
@@ -98,9 +100,13 @@ class Model {
      */
     async $get_one(value,key=""){
         let primary_key = key || this.primary_key;
-        let sql = `SELECT *  FROM \`${this.prefix + this.table_name}\` WHERE ? = ?`;
-        let rs = await this.db.query(sql,[primary_key,value]);
-        return rs;
+        let sql = `SELECT *  FROM \`${this.prefix + this.table_name}\` WHERE \`${primary_key}\` = ?`;
+        let rs = await this.db.query(sql,value);
+        if(rs.length === 0){
+            return false;
+        }else{
+            return rs[0];
+        }
     }
 
 }

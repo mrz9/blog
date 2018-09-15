@@ -8,6 +8,9 @@ module.exports =  class User extends Core.Model {
     }
     async add(user){
         user.create_time = parseInt(+new Date/1000);
+        user.salt = this.$utils.randomString(6);
+        user.password = this.$utils.md5(user.password+user.salt);
+        user.status = 0;
         let rs = await this.$add(user);
         return rs;
     }

@@ -1,7 +1,9 @@
 const Router = require('express').Router;
+const Utils = require('./utils')
 class Controller {
     constructor(){
         this.router = new Router();
+        this.$utils = Utils;
         this._route();
     }
     _route(){

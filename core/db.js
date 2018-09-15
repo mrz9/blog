@@ -5,6 +5,7 @@ let pool = mysql.createPool({
     connectionLimit : 20,
     host : core.config.db.host,
     user : core.config.db.user,
+    debug: core.config.debug ? ['ComQueryPacket'] : false,
     password : core.config.db.password,
     database : core.config.db.database
 })

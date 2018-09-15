@@ -1,4 +1,5 @@
 module.exports = {
+    debug:true,
     db: {
         type:'mysql',
         host:'localhost',
