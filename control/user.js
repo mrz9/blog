@@ -1,5 +1,6 @@
 const Core = require('../core');
 const Model = require('../model/user');
+
 class Control extends Core.Control {
     constructor(){
         super();
@@ -9,40 +10,46 @@ class Control extends Core.Control {
      * 控制器的路由写在这里
      */
     _route(){
-        this.router.get('/',this.index.bind(this))
-        this.router.get('/logout',this.logout.bind(this))
-        this.router.post('/login',this.login.bind(this))
-        this.router.post('/add',this.checkAuth,this.add.bind(this))
+
+        this.router.get('/',this.index)
+        this.router.get('/logout',this.logout)
+        this.router.post('/login',this.login)
+        this.router.post('/add',this.checkAuth,this.add)
     }
-    checkAuth(req,res,next){
-        if(!req.session.user){
-            res.send({code:-1,msg:'无权访问'})
+    checkAuth(){
+        if(!this.req.session.user){
+            this.res.send({code:-1,msg:'无权访问'})
             return false;
         }
-        next();
+        this.next();
     }
-    index(req,res){
-        res.send(req.session);
+    async index(){
+        try{
+            this.res.send(this.req.session);
+        }catch(e){
+            this.next(e);
+        };
+        
     }
-    async add(req,res){
-        let {username,password,recheck_password} = req.body;
+    async add(){
+        let {username,password,recheck_password} = this.req.body;
         if(password !== recheck_password){
-            res.send({code:-1,msg:'两次输入密码不一样'})
+            this.res.send({code:-1,msg:'两次输入密码不一样'})
             return false;
         }
         if(!String(username).trim() || !String(password).trim()){
-            res.send({code:-1,msg:'参数有误'})
+            this.res.send({code:-1,msg:'参数有误'})
         }else{
             let user = await this.model.$get_one(username,'username');
             if(user){
-                res.send({code:-1,msg:'用户已存在'});
+                this.res.send({code:-1,msg:'用户已存在'});
             }else{
                 let user = {};
                 user.username = username;
                 user.password = password;
-                user.loginip = req.ip;
+                user.loginip = this.req.ip;
                 let rs = await this.model.add(user);
-                res.send(rs);
+                this.res.send(rs);
             }
         }
     }
@@ -79,11 +86,28 @@ class Control extends Core.Control {
         }
 
     }
-    logout(req,res){
-        if(req.session.user){
-            delete req.session.user;
+    logout(){
+        if(this.req.session.user){
+            delete this.req.session.user;
         }
-        res.send({code:0,msg:'退出成功'});
+        this.res.send({code:0,msg:'退出成功'});
     }
 }
-module.exports = new Control().router;
+
+module.exports = new Control().$getRouter();
+
+// function f1(num){
+//     return new Promise((resolve,reject)=>{
+//         if(num<5){
+//             resolve(num+1);
+//         }
+//     })
+// }
+
+// function f2(num){
+//     return f1(num).then(value=>value)
+// }
+
+// f2(3).then(rs=>{
+//     console.log(rs);
+// })
