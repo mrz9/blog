@@ -10,7 +10,7 @@ class Control extends Core.Control {
         this.router.post('/create',this.create) 
         this.router.post('/edit/:id',this.edit) 
         this.router.get('/delete/:id',this.delete) 
-        this.router.get('/page/:page',this.page) 
+        this.router.get('/page(/:page)?',this.page) 
     }
     index(t){
         this.res.send('post index');
