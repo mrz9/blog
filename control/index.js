@@ -12,17 +12,17 @@ class Control extends Core.Control {
     /**
      * 控制器的处理方法
      */
-    index(req,res,next){
-        res.send('home index');
+    index(){
+        this.res.send('home index');
     }
-    login(req,res,next){
+    login(){
 
     }
-    logout(req,res,next){}
-    add(req,res,next){}
-    edit(req,res,next){
+    logout(){}
+    add(){}
+    edit(){
 
     }
-    delete(req,res,next){}
+    delete(){}
 }
-module.exports = new Control().router;
+module.exports = new Control().Router;

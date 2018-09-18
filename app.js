@@ -21,11 +21,10 @@ app.use(session({
    }))
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/', require('./control/index'));
+app.use('/', require('./control/index'));
 app.use('/user',require('./control/user'));
-// app.use('/post',require('./control/post'));
-// app.use((err,req,res,next)=>{
-//     console.log('err',err);
-//     res.send({code:500,msg:err});
-// })
+app.use('/post',require('./control/post'));
+app.use((err,req,res,next)=>{
+    res.send({code:500,msg:err.message,type:'global'});
+})
 module.exports = app;

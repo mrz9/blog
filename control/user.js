@@ -10,7 +10,6 @@ class Control extends Core.Control {
      * 控制器的路由写在这里
      */
     _route(){
-
         this.router.get('/',this.index)
         this.router.get('/logout',this.logout)
         this.router.post('/login',this.login)
@@ -94,20 +93,4 @@ class Control extends Core.Control {
     }
 }
 
-module.exports = new Control().$getRouter();
-
-// function f1(num){
-//     return new Promise((resolve,reject)=>{
-//         if(num<5){
-//             resolve(num+1);
-//         }
-//     })
-// }
-
-// function f2(num){
-//     return f1(num).then(value=>value)
-// }
-
-// f2(3).then(rs=>{
-//     console.log(rs);
-// })
+module.exports = new Control().Router;

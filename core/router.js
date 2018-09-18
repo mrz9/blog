@@ -16,16 +16,18 @@ class Router {
             if (typeof handle !== 'function') {
                 let type = toString.call(handle);
                 let msg = 'Route.' + method + '() requires a callback function but got a ' + type
-                throw new Error(msg);
+                next(new Error(msg));
             }
             middleware.push((req,res,next)=>{
                 try{
                     this.app.req = req;
                     this.app.res = res;
                     this.app.next = next;
-                    handle.call(this.app);
+                    this.co(handle).catch(e=>{
+                        next(e);
+                    })
                 }catch(e){
-                    res.send({code:500,msg:e.message});
+                    next(e);
                 }
             });
         };
@@ -36,9 +38,11 @@ class Router {
                 this.app.req = req;
                 this.app.res = res;
                 this.app.next = next;
-                cb.call(this.app);
+                this.co(cb).catch(e=>{
+                    next(e);
+                })
             }catch(e){
-                res.send({code:500,msg:e.message});
+                next(e);
             }
         })
 
@@ -49,6 +53,11 @@ class Router {
     }
     post(){
         this._route('post',...arguments)
+    }
+    co(cb){
+        return new Promise((resolve,reject)=>{
+            resolve(cb.call(this.app))
+        })
     }
 }
 

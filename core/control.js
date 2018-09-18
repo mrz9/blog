@@ -3,6 +3,7 @@ const Utils = require('./utils')
 class Controller {
     constructor(){
         this.router = new Router(this);
+        this.Router = this.router.router
         this.$utils = Utils;
         this._route();
     }
@@ -10,8 +11,8 @@ class Controller {
         return this.router.router
     }
     _route(){
-        this.router.get('/',function(req,res,next){
-            res.send('hello');
+        this.router.get('/',()=>{
+            this.res.send('hello');
         })
     }
 }
