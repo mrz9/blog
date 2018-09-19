@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>文件上传</title>
+</head>
+<body>
+    <div class="box">
+        <p class="title">普通ajax上传</p>
+        <input type="file" >
+        <button type="button">上传</button>
+    </div>
+
+    <div class="box">
+        <p class="title">ajax分片上传</p>
+        <input type="file" >
+        <button type="button" class="chunk">上传</button>
+    </div>
+    
+    <script>
+        document.addEventListener('click',function(e){
+            if(e.target.tagName.toUpperCase() === 'BUTTON'){
+                var file = e.target.previousElementSibling;
+                if(file.files.length == 0){
+                    return false;
+                }
+
+                if(e.target.classList.contains('chunk')){//chunk
+                    upload(file.files[0],true)
+                }else{
+                    upload(file.files[0])
+                }
+            }
+        },false);
+
+        function upload(file,isChunk){
+            console.log(file.size);
+            var chunkSize = 1024 * 1024; //每片1M
+            var chunkNum = Math.ceil(file.size / chunkSize);
+            var url = isChunk ? '/upload/chunk' : '/upload/upload';
+            if(isChunk){
+                for(var i = 0;i<chunkNum;i++){
+                    var start = i * chunkSize;
+                    ajax(url,file.slice(start,start + chunkSize),file.name,chunkNum,i);
+                }
+            }else{
+                ajax(url,file,file.name);
+            }
+        }
+
+        function ajax(url,fileData,filename,chunkNum,num){
+            var formData = new FormData();
+            formData.append("file", fileData);
+            formData.append("filename", filename);
+            if(typeof chunkNum !== 'undefined'){
+                formData.append("num", num);
+                formData.append("chunk_num", chunkNum);
+            }
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function(e) {
+                if (xhr.status == 200) {
+                    console.log('success')
+                    console.log(xhr.response)
+                } else {
+                    console.log('error:',xhr.status)
+                }
+            };
+            
+            xhr.open('post',url);
+            xhr.send(formData);
+        }
+    </script>
+</body>
+</html>

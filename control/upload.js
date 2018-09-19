@@ -2,6 +2,13 @@ const Core = require('../core');
 const multer  = require('multer');
 
 let upload = multer({ dest: 'uploads/tmp' });
+let upload_chunk = multer({
+    dest:'uploads/tmp',
+    filename:(req,file,cb)=>{
+        console.log(file);
+        // cb(null, file.fieldname + '-' + Date.now())
+    }
+})
 class Control extends Core.Control {
     constructor(){
         super();
@@ -11,7 +18,7 @@ class Control extends Core.Control {
      */
     _route(){
         this.router.post('/upload',upload.single('file'),this.fileCheck,this.upload)
-        this.router.post('/chunk',this.chunk)
+        this.router.post('/chunk',upload_chunk.single('file'),this.chunk)
     }
     /**
      * {
@@ -48,7 +55,13 @@ class Control extends Core.Control {
         this.res.send({code:0,msg:this.req.file,link:dist})
     }
     chunk(){
-
+        let file = this.req.file;
+        console.log(this.req.body);
+        console.log('文件类型：%s', file.mimetype);
+        console.log('原始文件名：%s', file.originalname);
+        console.log('文件大小：%s', file.size);
+        console.log('文件保存路径：%s', file.path);
+        this.res.send({code:0,msg:'true'})
     }
 }
 module.exports = new Control().Router;
