@@ -201,6 +201,19 @@ function checkDirAndCreate(dir){
     }
 }
 
+/**
+ * 删除tmp下的临时文件
+ * @param {*} tmpPath tmp目录文件
+ */
+function unlinkTmpFile(tmpPath){
+    return new Promise((resolve,reject)=>{
+        fs.unlink(path.resolve(APP_PATH,tmpPath), (err) => {
+            if (err) reject(err);
+            resolve(1);
+        });
+    })
+}
+
 checkDirAndCreate(UPLOAD_PATH);
 checkDirAndCreate(IMAGE_UPLOAD_PATH);
 checkDirAndCreate(FILE_UPLOAD_PATH);
@@ -222,5 +235,6 @@ module.exports = {
     isDate,
     trim,
     saveTmpFile,
-    checkDirAndCreate
+    checkDirAndCreate,
+    unlinkTmpFile
 }

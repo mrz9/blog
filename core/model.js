@@ -4,6 +4,7 @@ const Utils = require('./utils')
 class Model {
     constructor(){
         this.db = DB;
+        this.$core = Core;
         this.$utils = Utils;
         //默认表名字是model的class的名字的小写
         this.prefix = Core.config.db.prefix || '';
