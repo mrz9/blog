@@ -23,7 +23,7 @@ class Router {
                     this.app.req = req;
                     this.app.res = res;
                     this.app.next = next;
-                    this.co(handle).catch(e=>{
+                    this.co(handle,req,res,next).catch(e=>{
                         next(e);
                     })
                 }catch(e){
@@ -38,7 +38,7 @@ class Router {
                 this.app.req = req;
                 this.app.res = res;
                 this.app.next = next;
-                this.co(cb).catch(e=>{
+                this.co(cb,req,res,next).catch(e=>{
                     next(e);
                 })
             }catch(e){
@@ -54,9 +54,9 @@ class Router {
     post(){
         this._route('post',...arguments)
     }
-    co(cb){
+    co(cb,req,res,next){
         return new Promise((resolve,reject)=>{
-            resolve(cb.call(this.app))
+            resolve(cb.call(this.app,req,res,next))
         })
     }
 }

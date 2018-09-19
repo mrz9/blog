@@ -1,8 +1,18 @@
+const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
+
+const moment = require('moment')
+
 const toString = Object.prototype.toString;
 const isArray = Array.isArray;
 const isBuffer = Buffer.isBuffer;
 const numberReg = /^((\-?\d*\.?\d*(?:e[+-]?\d*(?:\d?\.?|\.?\d?)\d*)?)|(0[0-7]+)|(0x[0-9a-f]+))$/i;
+
+const APP_PATH  = path.resolve(__dirname,'../');
+const UPLOAD_PATH = path.resolve(APP_PATH,'./uploads');
+const IMAGE_UPLOAD_PATH = path.resolve(UPLOAD_PATH,'./images');
+const FILE_UPLOAD_PATH = path.resolve(UPLOAD_PATH,'./files')
 
 /**
  * 
@@ -129,8 +139,74 @@ function isEmpty(obj){
 
 }
 
+/**
+ * 保存临时文件
+ * @param {*} file 
+ * @param {*} name //保存的文字
+ * 
+ * {
+    "fieldname": "file",
+    "originalname": "2.5M.jpg",
+    "encoding": "7bit",
+    "mimetype": "image/jpeg",
+    "destination": "uploads/tmp",
+    "filename": "a539ccdbea234d3b46627864be0c2025",
+    "path": "uploads/tmp/a539ccdbea234d3b46627864be0c2025",
+    "size": 2456281
+  }
+ */
+function saveTmpFile(file,name){
+    return new Promise((resolve,reject)=>{
+        if(!name){
+            let suffix =  file.originalname.split('.');
+            suffix = suffix.length >1 ? '.' + suffix.pop() : '';
+            name = file.filename + suffix;
+        }
+        
+        let src = path.resolve(APP_PATH,file.path)
+        let savePath = path.resolve(IMAGE_UPLOAD_PATH,moment().format('YYYYMMDD'));
+        checkDirAndCreate(savePath);
+        let dist = path.resolve(savePath,name);
+        if(fs.existsSync(src)){
+            try{
+                let ws = fs.createWriteStream(dist)
+                fs.createReadStream(src).pipe(ws).on('error',reject);
+                ws.on('finish',()=>{
+                    //成功后需要删除临时文件
+                    fs.unlink(src, (err) => {
+                        if (err) throw err;
+                    });
+                    resolve(dist);
+                }).on('error',reject);
+            }catch(e){
+                reject(e);
+            }
+        }else{
+            reject(new Error(`${file.path} 不存在`))
+        }
+    })
+}
+
+/**
+ * 检测目录是否存在，没有则创建
+ * @param {path} dir 
+ */
+function checkDirAndCreate(dir){
+    try{
+        if(!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
+    }catch(e){
+        throw e;
+    }
+}
+
+checkDirAndCreate(UPLOAD_PATH);
+checkDirAndCreate(IMAGE_UPLOAD_PATH);
+checkDirAndCreate(FILE_UPLOAD_PATH);
 
 module.exports = {
+    APP_PATH,
     md5,
     randomString,
     rand,
@@ -144,5 +220,7 @@ module.exports = {
     isFunction,
     isInt,
     isDate,
-    trim
+    trim,
+    saveTmpFile,
+    checkDirAndCreate
 }
