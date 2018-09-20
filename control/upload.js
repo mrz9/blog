@@ -1,14 +1,48 @@
+const path = require('path')
+const fs = require('fs')
+const crypto = require('crypto')
 const Core = require('../core');
 const multer  = require('multer');
 
 let upload = multer({ dest: 'uploads/tmp' });
-let upload_chunk = multer({
-    dest:'uploads/tmp',
+
+let chunk_storage = multer.diskStorage({
+    destination:function(req,file,cb){
+        //后缀检测
+        let suffix = req.body.filename.split('.');
+        suffix = suffix.length >1 ? suffix.pop() : '';
+
+        if(!suffix || Core.config.upload.allowed_types.split('|').indexOf(suffix) == -1){
+            cb(new Error('上传格式不支持'))
+            return;
+        }
+
+        /**
+         * 注意，前端数据传输的顺序，需要guid在文件数据之前，否则body获取不了guid
+         */
+        if(req.body.guid){
+            Core.utils.checkDirAndCreate(path.resolve(Core.utils.UPLOAD_PATH,'tmp'))
+            Core.utils.checkDirAndCreate(path.resolve(Core.utils.UPLOAD_PATH,'tmp',req.body.guid))
+            cb(null, `uploads/tmp/${req.body.guid}`)
+        }else{
+            cb(new Error('参数有误'))
+        }
+    },
     filename:(req,file,cb)=>{
-        console.log(file);
-        // cb(null, file.fieldname + '-' + Date.now())
+        /**
+         * 注意，前端数据传输的顺序，需要num在文件数据之前，否则body获取不了num
+         */
+        if(typeof req.body.num !== 'undefined'){
+            cb(null, `${req.body.chunk_num}_${req.body.num}`)
+        }else{
+            cb(new Error('参数有误'))
+        }
+        
     }
 })
+
+let upload_chunk = multer({storage:chunk_storage})
+
 class Control extends Core.Control {
     constructor(){
         super();
@@ -54,14 +88,59 @@ class Control extends Core.Control {
         let dist = await this.$utils.saveTmpFile(this.req.file);
         this.res.send({code:0,msg:this.req.file,link:dist})
     }
-    chunk(){
-        let file = this.req.file;
-        console.log(this.req.body);
-        console.log('文件类型：%s', file.mimetype);
-        console.log('原始文件名：%s', file.originalname);
-        console.log('文件大小：%s', file.size);
-        console.log('文件保存路径：%s', file.path);
-        this.res.send({code:0,msg:'true'})
+    async chunk(){
+        try{
+            let chunkList = fs.readdirSync(path.resolve(this.$utils.UPLOAD_PATH,'tmp',this.req.body.guid));
+            //后缀检测
+            let suffix = this.req.body.filename.split('.');
+            suffix = suffix.length >1 ? suffix.pop() : '';
+            // let name = crypto.pseudoRandomBytes(16).toString('hex') + '.' + suffix;
+            let name = this.req.body.guid + '.' + suffix;
+            let dist = path.resolve(this.$utils.UPLOAD_PATH,'tmp',name);
+            
+            //检查分片是否都上传成功
+            if(chunkList.length == this.req.body.chunk_num && !fs.existsSync(dist)){
+                console.log('===in',this.req.body.num)
+                console.log(this.res.headersSent);
+                let chunk_path = path.resolve(this.$utils.UPLOAD_PATH,'../',this.req.file.path,'../');
+                await writeChunkData(dist,chunk_path,this.req.body.chunk_num,0);
+                console.log('==== chunk_done')
+                console.log(this.res.headersSent);
+                this.res.send({code:0,msg:'上传成功',link:dist})
+            }else{
+                console.log('tst',this.req.body.num)
+                this.res.send({code:0,msg:'true'})
+            }
+        }catch(e){
+            console.log('chunk_error',e)
+            this.next(e);
+        }
+    }
+}
+
+function writeChunkData(dist,file_path,max,num){
+    try{
+        let src = path.resolve(file_path,`${max}_${num}`);
+        let newFile = fs.createWriteStream(dist,{'flags': 'a'});
+
+        fs.createReadStream(src).pipe(newFile).on('error',e=>{throw e});
+        newFile.on('finish',async ()=>{
+                //成功后需要删除临时文件
+                fs.unlink(src, (e) => {
+                    if (e) throw e
+                });
+                if(max-1 > num){
+                    writeChunkData(dist,file_path,max,++num)
+                }else{
+                    //所有文件都成功后，删除临时目录
+                    fs.rmdir(file_path, (e) => {
+                        if (e) throw e
+                    });
+                }
+                
+            }).on('error',e=>{throw e});
+    }catch(e){
+        throw e
     }
 }
 module.exports = new Control().Router;

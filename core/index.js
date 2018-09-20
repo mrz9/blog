@@ -7,6 +7,7 @@ exports.VERSION = '0.0.1';
 exports.APP_PATH = APP_PATH;
 exports.CONFIG_PATH = CONFIG_PATH;
 exports.config = require(CONFIG_PATH);
+exports.utils = require('./utils');
 
 exports.Model = require('./model')
 exports.Control = require('./control')

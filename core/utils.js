@@ -220,6 +220,9 @@ checkDirAndCreate(FILE_UPLOAD_PATH);
 
 module.exports = {
     APP_PATH,
+    UPLOAD_PATH,
+    IMAGE_UPLOAD_PATH,
+    FILE_UPLOAD_PATH,
     md5,
     randomString,
     rand,

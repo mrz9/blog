@@ -41,23 +41,25 @@
             var chunkNum = Math.ceil(file.size / chunkSize);
             var url = isChunk ? '/upload/chunk' : '/upload/upload';
             if(isChunk){
+                var uid = guid();
                 for(var i = 0;i<chunkNum;i++){
                     var start = i * chunkSize;
-                    ajax(url,file.slice(start,start + chunkSize),file.name,chunkNum,i);
+                    ajax(url,file.slice(start,start + chunkSize),file.name,chunkNum,i,uid);
                 }
             }else{
                 ajax(url,file,file.name);
             }
         }
 
-        function ajax(url,fileData,filename,chunkNum,num){
+        function ajax(url,fileData,filename,chunkNum,num,uid){
             var formData = new FormData();
-            formData.append("file", fileData);
             formData.append("filename", filename);
             if(typeof chunkNum !== 'undefined'){
+                formData.append('guid',uid);
                 formData.append("num", num);
                 formData.append("chunk_num", chunkNum);
             }
+            formData.append("file", fileData);
             var xhr = new XMLHttpRequest();
             xhr.onload = function(e) {
                 if (xhr.status == 200) {
@@ -70,6 +72,17 @@
             
             xhr.open('post',url);
             xhr.send(formData);
+        }
+
+        var counter = 0;
+        function guid() {
+            var uid = (+new Date()).toString( 32 ),
+                i = 0;
+            for ( ; i < 5; i++ ) {
+                uid += Math.floor( Math.random() * 65535 ).toString( 32 );
+            }
+
+            return uid + (counter++).toString( 32 );
         }
     </script>
 </body>
