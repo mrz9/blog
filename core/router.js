@@ -23,13 +23,10 @@ class Router {
                     this.app.req = req;
                     this.app.res = res;
                     this.app.next = next;
-                    return await handle.call(this.app,req,res,next);
-                    // this.co(handle,req,res,next).catch(e=>{
-                    //     console.log('m co ',e)
-                    //     next(e);
-                    // })
+                    this.co(handle,req,res,next).catch(e=>{
+                        next(e);
+                    })
                 }catch(e){
-                    console.log('m next',e)
                     next(e);
                 }
             });
@@ -41,15 +38,11 @@ class Router {
                 this.app.req = req;
                 this.app.res = res;
                 this.app.next = next;
-                return await cb.call(this.app,req,res,next);
-
-                // this.co(cb,req,res,next).catch(e=>{
-                //     console.log('co',e)
-                //     return next(e);
-                // })
+                this.co(cb,req,res,next).catch(e=>{
+                    next(e);
+                })
             }catch(e){
-                console.log('next',e)
-                return next(e);
+                next(e);
             }
         })
 
@@ -63,8 +56,7 @@ class Router {
     }
     co(cb,req,res,next){
         return new Promise(async (resolve,reject)=>{
-            let rs = await cb.call(this.app,req,res,next);
-            resolve(rs)
+            resolve(cb.call(this.app,req,res,next))
         })
     }
 }
