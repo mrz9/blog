@@ -29,10 +29,9 @@ app.use('/upload',require('./control/upload'));
 
 app.use((err,req,res,next)=>{
     if(err.stack){
-        console.log(err)
-        res.send({code:500,msg:err.message,type:'global'});
-        return;
+        console.log('global',err)
+        return res.send({code:500,msg:err.message,type:'global'});
     }
-    next();
+    return next();
 })
 module.exports = app;

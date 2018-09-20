@@ -18,31 +18,38 @@ class Router {
                 let msg = 'Route.' + method + '() requires a callback function but got a ' + type
                 next(new Error(msg));
             }
-            middleware.push((req,res,next)=>{
+            middleware.push(async (req,res,next)=>{
                 try{
                     this.app.req = req;
                     this.app.res = res;
                     this.app.next = next;
-                    this.co(handle,req,res,next).catch(e=>{
-                        next(e);
-                    })
+                    return await handle.call(this.app,req,res,next);
+                    // this.co(handle,req,res,next).catch(e=>{
+                    //     console.log('m co ',e)
+                    //     next(e);
+                    // })
                 }catch(e){
+                    console.log('m next',e)
                     next(e);
                 }
             });
         };
 
         
-        middleware.push((req,res,next)=>{
+        middleware.push(async (req,res,next)=>{
             try{
                 this.app.req = req;
                 this.app.res = res;
                 this.app.next = next;
-                this.co(cb,req,res,next).catch(e=>{
-                    next(e);
-                })
+                return await cb.call(this.app,req,res,next);
+
+                // this.co(cb,req,res,next).catch(e=>{
+                //     console.log('co',e)
+                //     return next(e);
+                // })
             }catch(e){
-                next(e);
+                console.log('next',e)
+                return next(e);
             }
         })
 
@@ -55,8 +62,9 @@ class Router {
         this._route('post',...arguments)
     }
     co(cb,req,res,next){
-        return new Promise((resolve,reject)=>{
-            resolve(cb.call(this.app,req,res,next))
+        return new Promise(async (resolve,reject)=>{
+            let rs = await cb.call(this.app,req,res,next);
+            resolve(rs)
         })
     }
 }

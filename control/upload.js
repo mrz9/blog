@@ -90,57 +90,60 @@ class Control extends Core.Control {
     }
     async chunk(){
         try{
-            let chunkList = fs.readdirSync(path.resolve(this.$utils.UPLOAD_PATH,'tmp',this.req.body.guid));
+            let hasDone = false; //是否已经合并完成
             //后缀检测
             let suffix = this.req.body.filename.split('.');
             suffix = suffix.length >1 ? suffix.pop() : '';
             // let name = crypto.pseudoRandomBytes(16).toString('hex') + '.' + suffix;
             let name = this.req.body.guid + '.' + suffix;
+
             let dist = path.resolve(this.$utils.UPLOAD_PATH,'tmp',name);
-            
-            //检查分片是否都上传成功
-            if(chunkList.length == this.req.body.chunk_num && !fs.existsSync(dist)){
-                console.log('===in',this.req.body.num)
-                console.log(this.res.headersSent);
+            if(!fs.existsSync(dist) && !hasDone){
+                let chunkList = fs.readdirSync(path.resolve(this.$utils.UPLOAD_PATH,'tmp',this.req.body.guid));
+                //检查分片是否都上传成功
                 let chunk_path = path.resolve(this.$utils.UPLOAD_PATH,'../',this.req.file.path,'../');
-                await writeChunkData(dist,chunk_path,this.req.body.chunk_num,0);
-                console.log('==== chunk_done')
-                console.log(this.res.headersSent);
-                this.res.send({code:0,msg:'上传成功',link:dist})
+                
+                pipeChunk(dist,chunk_path,this.req.body.chunk_num,0);
+                
+                //复制文件到对应目录
+                let save_path = await this.$utils.saveTmpFile({
+                    originalname:name,
+                    filename:this.req.body.guid,
+                    path:dist
+                });
+                hasDone = true;
+                return this.res.send({code:0,msg:'上传成功',link:dist})
             }else{
-                console.log('tst',this.req.body.num)
-                this.res.send({code:0,msg:'true'})
+                return this.res.send({code:0,msg:'true'})
             }
         }catch(e){
-            console.log('chunk_error',e)
-            this.next(e);
+            return this.next(e);
         }
     }
 }
 
-function writeChunkData(dist,file_path,max,num){
-    try{
-        let src = path.resolve(file_path,`${max}_${num}`);
-        let newFile = fs.createWriteStream(dist,{'flags': 'a'});
 
-        fs.createReadStream(src).pipe(newFile).on('error',e=>{throw e});
-        newFile.on('finish',async ()=>{
-                //成功后需要删除临时文件
-                fs.unlink(src, (e) => {
-                    if (e) throw e
-                });
-                if(max-1 > num){
-                    writeChunkData(dist,file_path,max,++num)
-                }else{
-                    //所有文件都成功后，删除临时目录
-                    fs.rmdir(file_path, (e) => {
-                        if (e) throw e
-                    });
+function pipeChunk(dist,file_path,max,num){
+    let src = path.resolve(file_path,`${max}_${num}`);
+    let ws = fs.createWriteStream(dist,{'flags': 'a'});
+    fs.createReadStream(src).pipe(ws)
+    ws.on('finish',()=>{
+        //成功后需要删除临时文件
+        fs.unlink(src, (e) => {
+            if (e) {
+                console.log(e)
+            }
+        });
+        if(max-1>num){
+            pipeChunk(dist,file_path,max,++num)
+        }else{
+            //所有文件都成功后，删除临时目录
+            fs.rmdir(file_path, (e) => {
+                if (e) {
+                    console.log(e);
                 }
-                
-            }).on('error',e=>{throw e});
-    }catch(e){
-        throw e
-    }
+            });
+        }
+    })
 }
 module.exports = new Control().Router;
