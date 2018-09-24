@@ -1,17 +1,9 @@
-const core = require('./index');
 const expressRouter = require('express').Router;
 
 class Router {
     constructor(app){
         this.app = app;
-        this.routeConfig = core.routes;
         this.router = new expressRouter();
-    }
-    bindRoute(){
-        this.routeConfig.forEach((url,idex)=>{
-            let routeItem = this.routeConfig[url];
-             
-        })
     }
     _route(){
         let args = Array.prototype.slice.call(arguments);

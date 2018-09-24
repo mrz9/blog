@@ -12,7 +12,7 @@ let chunk_storage = multer.diskStorage({
         let suffix = req.body.filename.split('.');
         suffix = suffix.length >1 ? suffix.pop() : '';
 
-        if(!suffix || Core.config.upload.allowed_types.split('|').indexOf(suffix) == -1){
+        if(!suffix || Core.config.upload.allowed_types.split('|').indexOf(suffix.toLowerCase()) == -1){
             cb(new Error('上传格式不支持'))
             return;
         }
@@ -88,7 +88,7 @@ class Control extends Core.Control {
         let dist = await this.$utils.saveTmpFile(this.req.file);
         this.res.send({code:0,msg:this.req.file,link:dist})
     }
-    async chunk(){
+    async chunk(req,res,next){
         try{
             let hasDone = false; //是否已经合并完成
             //后缀检测
@@ -113,12 +113,12 @@ class Control extends Core.Control {
                     filename:this.req.body.guid,
                     path:dist
                 });
-                return this.res.send({code:0,msg:'上传成功',link:dist})
+                this.res.send({code:0,msg:'上传成功',link:dist})
             }else{
-                return this.res.send({code:0,msg:'true'})
+                this.res.send({code:0,msg:'true'})
             }
         }catch(e){
-            return this.next(e);
+            this.next(e);
         }
     }
 }
