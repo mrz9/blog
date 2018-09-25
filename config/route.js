@@ -13,6 +13,6 @@ module.exports = {
     '/post/page(/:page)?':'post.page',
     
     //upload
-    '/upload/upload':['post',['upload.fileCheck'],'upload.upload'],
-    '/upload/chunk':['post',['upload.chunk','upload.fileCheck'],'upload.chunk']
+    '/upload/upload':['post',['upload.upload','upload.fileCheck'],'upload.upload'],
+    '/upload/chunk':['post',['upload.chunk'],'upload.chunk']
 }

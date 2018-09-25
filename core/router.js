@@ -36,14 +36,11 @@ class Router {
             let type = 'm';
             let item = middlewares[i];
             if(i === middlewares.length -1) type = 'c';
-            let [app,handle] = core.utils.matchRouteMethod(item,type);
-            // if (typeof handle !== 'function') {
-            //     let type = toString.call(handle);
-            //     let msg = 'Route.' + method + '() requires a callback function but got a ' + type
-            //     next(new Error(msg));
-            // }
+            
             rs.push(async (req,res,next)=>{
                 try{
+                    let [app,handle] = core.utils.matchRouteMethod(item,type);
+
                     app.req = req;
                     app.res = res;
                     app.next = next;

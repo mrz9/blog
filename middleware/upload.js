@@ -48,10 +48,10 @@ class Middleware {
 
     }
     upload(){
-        return upload.single('file');
+        upload.single('file')(...arguments)
     }
     chunk(){
-        return upload_chunk.single('file')
+        upload_chunk.single('file')(...arguments)
     }
     async fileCheck(){
         if(Core.config.upload.max_size !== 0 && Core.config.upload.max_size< this.req.file.size){
