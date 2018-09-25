@@ -5,13 +5,6 @@ class Control extends Core.Control {
         super();
         this.model = new Model();
     }
-    _route(){
-        this.router.get('/',this.index) 
-        this.router.post('/create',this.create) 
-        this.router.post('/edit/:id',this.edit) 
-        this.router.get('/delete/:id',this.delete) 
-        this.router.get('/page(/:page)?',this.page) 
-    }
     index(t){
         this.res.send('post index');
     }
@@ -64,4 +57,4 @@ class Control extends Core.Control {
     }
 }
 
-module.exports = new Control().Router;
+module.exports = Control;

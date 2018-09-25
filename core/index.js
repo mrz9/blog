@@ -13,3 +13,5 @@ exports.utils = require('./utils');
 exports.Model = require('./model')
 exports.Control = require('./control')
 
+exports.Router = require('./router');
+

@@ -12,7 +12,10 @@ const numberReg = /^((\-?\d*\.?\d*(?:e[+-]?\d*(?:\d?\.?|\.?\d?)\d*)?)|(0[0-7]+)|
 const APP_PATH  = path.resolve(__dirname,'../');
 const UPLOAD_PATH = path.resolve(APP_PATH,'./uploads');
 const IMAGE_UPLOAD_PATH = path.resolve(UPLOAD_PATH,'./images');
-const FILE_UPLOAD_PATH = path.resolve(UPLOAD_PATH,'./files')
+const FILE_UPLOAD_PATH = path.resolve(UPLOAD_PATH,'./files');
+
+const CONTROL_PATH = path.resolve(APP_PATH,'./control');
+const MIDDLEWARE_PATH = path.resolve(APP_PATH,'./middleware');
 
 /**
  * 
@@ -213,6 +216,35 @@ function unlinkTmpFile(tmpPath){
         });
     })
 }
+/**
+ * 根据提供的路径返回对应的实例
+ * @param {String} srt 路径
+ * @param {String} type 类型 c:control or m:middleware
+ */
+function matchRouteMethod(str,type){
+    let md;
+    
+    let [filePath,methodName] = (()=>{
+        let arr = str.split('.');
+        let mn = arr.pop();
+        let path = arr.join('/');
+        return [path,mn];
+    })()
+
+    switch(type){
+        case 'c':
+            md = require(path.resolve(CONTROL_PATH,filePath+'.js'))
+            break;
+        case 'm':
+            md = require(path.resolve(MIDDLEWARE_PATH,filePath+'.js'))
+            break;
+        default:
+            throw new TypeError('类型不存在');
+            return;
+    }
+    let instance = new md();
+    return [instance,instance[methodName]];
+}
 
 checkDirAndCreate(UPLOAD_PATH);
 checkDirAndCreate(IMAGE_UPLOAD_PATH);
@@ -239,5 +271,6 @@ module.exports = {
     trim,
     saveTmpFile,
     checkDirAndCreate,
-    unlinkTmpFile
+    unlinkTmpFile,
+    matchRouteMethod
 }

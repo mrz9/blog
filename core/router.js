@@ -2,68 +2,63 @@ const core = require('./index');
 const expressRouter = require('express').Router;
 
 class Router {
-    constructor(app){
-        this.app = app;
+    constructor(){
         this.routeConfig = core.routes;
         this.router = new expressRouter();
+        
+        //绑定路由
+        this.bindRoute();
     }
     bindRoute(){
-        this.routeConfig.forEach((url,idex)=>{
+        Object.keys(this.routeConfig).forEach((url,idex)=>{
             let routeItem = this.routeConfig[url];
-             
+            switch(toString.call(routeItem)){
+                case "[object String]"://字符串时表示get请求，且只有控制器
+                    this.router.get(url,core.utils.matchRouteMethod(routeItem,'c')[1])
+                    break;
+                case "[object Object]":
+                    break;
+                case "[object Array]"://[method,[middleware],control]
+                console.log(routeItem)
+                    let [method,middlewares,control=[]] = routeItem;
+                    if(toString.call(middlewares) !== "[object Array]") middlewares = [middlewares]
+                    let mehtods = this.getMiddleware(middlewares.concat(control));
+                    this.router[method](url,...mehtods)
+                    break;
+                default:
+                    throw new TypeError('路由不支持')
+                    break;
+
+            }
         })
     }
-    _route(){
-        let args = Array.prototype.slice.call(arguments);
-        let method = args.shift();
-        let path = args.shift();
-        let cb = args.pop();
-        let middleware = [];
-        for (var i = 0; i < args.length; i++) {
-            let handle = args[i];
+    getMiddleware(middlewares){
+        console.log(middlewares);
+        let rs = [];
+        for (let i = 0; i < middlewares.length; i++) {
+            let type = 'm';
+            let item = middlewares[i];
+            if(i === middlewares.length -1) type = 'c';
+            console.log(item);
+            let [app,handle] = core.utils.matchRouteMethod(item,type);
             if (typeof handle !== 'function') {
                 let type = toString.call(handle);
                 let msg = 'Route.' + method + '() requires a callback function but got a ' + type
                 next(new Error(msg));
             }
-            middleware.push(async (req,res,next)=>{
+            rs.push(async (req,res,next)=>{
                 try{
-                    this.app.req = req;
-                    this.app.res = res;
-                    this.app.next = next;
-                    await handle.call(this.app,req,res,next);
+                    app.req = req;
+                    app.res = res;
+                    app.next = next;
+                    await handle.call(app,req,res,next);
                 }catch(e){
                 console.log('err',e)
                     next(e);
                 }
             });
         };
-
-        
-        middleware.push(async (req,res,next)=>{
-            try{
-                this.app.req = req;
-                this.app.res = res;
-                this.app.next = next;
-                await cb.call(this.app,req,res,next);
-            }catch(e){
-                console.log('err',e)
-                next(e);
-            }
-        })
-
-        this.router[method](path,...middleware)
-    }
-    get(){
-        this._route('get',...arguments)
-    }
-    post(){
-        this._route('post',...arguments)
-    }
-    co(cb,req,res,next){
-        return new Promise(async (resolve,reject)=>{
-            resolve(cb.call(this.app,req,res,next))
-        })
+        return rs;
     }
 }
 

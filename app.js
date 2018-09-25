@@ -1,3 +1,5 @@
+var Core = require('./core');
+
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -19,13 +21,10 @@ app.use(session({
     // }
 }))
 
+new Core.Router();
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
-
-app.use('/', require('./control/index'));
-app.use('/user',require('./control/user'));
-app.use('/post',require('./control/post'));
-app.use('/upload',require('./control/upload'));
 
 app.use((err,req,res,next)=>{
     if(err.stack){

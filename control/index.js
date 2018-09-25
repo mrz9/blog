@@ -3,12 +3,7 @@ class Control extends Core.Control {
     constructor(){
         super();
     }
-    /**
-     * 控制器的路由写在这里
-     */
-    _route(){
-        this.router.get('/test',this.index)
-    }
+
     /**
      * 控制器的处理方法
      */
@@ -26,4 +21,4 @@ class Control extends Core.Control {
     }
     delete(){}
 }
-module.exports = new Control().Router;
+module.exports = Control;

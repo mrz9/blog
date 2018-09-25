@@ -6,22 +6,6 @@ class Control extends Core.Control {
         super();
         this.model = new Model();
     }
-    /**
-     * 控制器的路由写在这里
-     */
-    _route(){
-        this.router.get('/',this.index)
-        this.router.get('/logout',this.logout)
-        this.router.post('/login',this.login)
-        this.router.post('/add',this.checkAuth,this.add)
-    }
-    checkAuth(){
-        if(!this.req.session.user){
-            this.res.send({code:-1,msg:'无权访问'})
-            return false;
-        }
-        this.next();
-    }
     async index(){
         try{
             this.res.send(this.req.session);
@@ -93,4 +77,4 @@ class Control extends Core.Control {
     }
 }
 
-module.exports = new Control().Router;
+module.exports = Control;
