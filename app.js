@@ -21,16 +21,19 @@ app.use(session({
     // }
 }))
 
-new Core.Router();
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
-
+new Core.Router(app);
 app.use((err,req,res,next)=>{
     if(err.stack){
         console.log('global',err)
         return res.send({code:500,msg:err.message,type:'global'});
     }
     return next();
+})
+
+process.on('unhandledRejection',e=>{
+    console.log(e);
 })
 module.exports = app;
