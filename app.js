@@ -25,6 +25,11 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
 new Core.Router(app);
+
+app.get('*', function(req, res){
+    res.sendFile(path.join(__dirname, 'public','404.html'))
+});
+
 app.use((err,req,res,next)=>{
     if(err.stack){
         console.log('global',err)
