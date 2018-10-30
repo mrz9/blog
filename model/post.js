@@ -19,4 +19,15 @@ module.exports =  class Post extends Core.Model {
         let rs = await this.$page_data(page,where,orderBy);
         return rs;
     }
+    
+    async delete(id){
+        let post = await this.$get_one(id);
+        if(post){
+            post.status = -1;
+            let rs = await this.update(post,{id:post.id});
+            return rs;
+        }else{
+            return false;
+        }
+    }
 }

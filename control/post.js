@@ -52,8 +52,18 @@ class Control extends Core.Control {
             this.res.send(rs);
         }
     }
-    delete(){
-        this.res.send(`pst delete ${this.req.params.id}`)
+    async delete(){
+        let id = this.req.params.id;
+        if(!id || isNaN(id) ){
+            this.res.send({code:-1,msg:'参数有误'})
+            return;
+        }
+        let rs = await this.model.delete(id)
+        if(rs.affectedRows){
+            this.res.send({code:0,msg:'删除成功'})
+        }else{
+            this.res.send(rs);
+        }
     }
 }
 

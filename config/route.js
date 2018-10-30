@@ -7,9 +7,9 @@ module.exports = {
     
     //post
     '/post/':'post.index',
-    '/post/create':['post','post.create'],
-    '/post/edit/:id':['post','post.edit'],
-    '/post/delete/:id':'post.delete',
+    '/post/create':['post',['common.checkAuth'],'post.create'],
+    '/post/edit/:id':['post',['common.checkAuth'],'post.edit'],
+    '/post/delete/:id':['post',['common.checkAuth'],'post.delete'],
     '/post/page(/:page)?':'post.page',
     
     //upload
