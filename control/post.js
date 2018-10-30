@@ -31,6 +31,12 @@ class Control extends Core.Control {
     async create(){
         let post = this.req.body;
         if(post.id) delete post.id;
+        if(!String(post.title).trim() || !String(this.content).trim()){
+            this.res.send({code:-1,msg:'参数有误'})
+            return;
+        }
+        post.author = this.req.session.user.name;
+
         let rs = await this.model.add(post);
         if(rs.affectedRows){
             this.res.send({code:0,msg:'添加成功'})

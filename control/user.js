@@ -57,7 +57,7 @@ class Control extends Core.Control {
 
                 req.session.user = {
                     id:user.id,
-                    name:user.name,
+                    name:user.username,
                     status:user.status,
                 }
 

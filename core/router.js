@@ -40,7 +40,6 @@ class Router {
             rs.push(async (req,res,next)=>{
                 try{
                     let [app,handle] = core.utils.matchRouteMethod(item,type);
-
                     app.req = req;
                     app.res = res;
                     app.next = next;

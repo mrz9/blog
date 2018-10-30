@@ -4,6 +4,8 @@ module.exports =  class Post extends Core.Model {
         super();
     }
     async add(post){
+        if(!post.status) post.status = 0;
+        post.create_time = parseInt(+new Date/1000)
         let rs = await this.$add(post);
         return rs;
     }
